@@ -50,7 +50,7 @@ if __name__ == "__main__":
     print(f"The price of the Product is: {product_price_symbol}{product_total_price:.2f}")
     print(f"Product Name: {product_name}")
 
-    if product_total_price < 100000.00:
+    if product_total_price < 164000.00:
         debuglevel = 0
         gmail_email = os.getenv("SENDER_EMAIL")
         gmail_password = os.getenv("SENDER_PASSWORD")
