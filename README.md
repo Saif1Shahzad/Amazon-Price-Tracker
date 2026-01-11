@@ -1,11 +1,11 @@
 # Amazon Price Tracker
 
-Track a single Amazon product, print its current price, and email yourself when it drops below your threshold.
+Automated price monitoring for Amazon products with email alerts when prices drop below your threshold.
 
 ## Prerequisites
 
 - Python 3.13+ (tested with the bundled `venv`)
-- PowerShell (for the activation command examples)
+- PowerShell (for Windows automation via Task Scheduler)
 - An email account with SMTP access (Gmail app password recommended)
 
 ## Setup
@@ -33,25 +33,46 @@ SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 ```
 
-4. Run the scraper
+4. Test manually first
 
 ```powershell
 python main.py
 ```
 
+## Automation
+
+This workflow is designed to run automatically on a schedule. Set up automation using:
+
+### Windows Task Scheduler
+
+1. Open Task Scheduler (`taskschd.msc`)
+2. Create a new Basic Task
+3. Set trigger (e.g., daily at specific time, or every few hours)
+4. Action: **Start a program**
+   - Program: `C:\Users\YourUser\AppData\Local\Programs\Python\Python313\python.exe` (adjust path)
+   - Arguments: `"d:\Portfolio Projects\Amazon-Price-Tracker\main.py"`
+   - Start in: `d:\Portfolio Projects\Amazon-Price-Tracker`
+5. Save and test the task
+
+### Alternative: GitHub Actions (Cloud-based)
+
+Add `.github/workflows/price-check.yml` with a cron schedule to run in the cloud without keeping your PC on.
+
 ## How it works
 
 - Fetches the product page with a desktop User-Agent to reduce blocking.
 - Parses price, currency symbol, and product name with `BeautifulSoup`.
-- Prints the current price to the console.
-- Sends an email alert if the price is below your configured threshold in `main.py`.
+- Prints the current price to the console/log.
+- Sends an email alert if the price drops below your configured threshold.
+- Runs automatically on your chosen schedule without manual intervention.
 
 ## Configuration
 
 - **Product URL:** Edit `url` inside `main.py`.
-- **Price threshold:** Adjust `product_total_price < 100000.00` to your target.
+- **Price threshold:** Adjust the comparison value (currently `< 164000.00`) to your target.
 - **Email sender/receiver:** Set via `.env` (`SENDER_EMAIL`, `RECIEVER_EMAIL`). For Gmail, use an App Password and keep 2FA enabled.
 - **SMTP host/port:** Defaults to Gmail STARTTLS (`smtp.gmail.com:587`). Change if you use another provider.
+- **Schedule frequency:** Configure in Task Scheduler or workflow file based on how often you want to check prices.
 
 ## Notes and troubleshooting
 
