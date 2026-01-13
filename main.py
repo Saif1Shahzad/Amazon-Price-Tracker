@@ -67,7 +67,7 @@ if __name__ == "__main__":
     print(f"The price of the Product is: {product_price_symbol} {product_total_price:.2f}")
     print(f"Product Name: {product_name}")
 
-    if product_total_price < 164000.00:
+    if (product_price_symbol == "$" and product_total_price < 500.00) or (product_price_symbol == "PKR" and product_total_price < 140000.00):
         debuglevel = 0
         gmail_email = os.getenv("SENDER_EMAIL")
         gmail_password = os.getenv("SENDER_PASSWORD")
@@ -85,6 +85,6 @@ if __name__ == "__main__":
         from_address = gmail_email
         to_address = 'saifshahzad901@gmail.com'
         subject = f'Amazon Price Alert!'
-        body = f'The price of the product "{product_name}" has dropped to {product_price_symbol}{product_total_price:.2f}.\nCheck it out at {url}'
+        body = f'The price of the product "{product_name}" has dropped to {product_price_symbol} {product_total_price:.2f}.\nCheck it out at:\n {url}'
         send_email(smtp, from_address, to_address, subject, body)
         smtp.quit()
