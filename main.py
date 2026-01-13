@@ -13,22 +13,26 @@ load_dotenv()
 
 # Enhanced headers to mimic real browser behavior
 headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "Accept": "text/html, */*; q=0.01",
     "Accept-Language": "en-US,en;q=0.9",
-    "Accept-Encoding": "gzip, deflate, br",
-    "Connection": "keep-alive",
-    "Upgrade-Insecure-Requests": "1",
-    "Sec-Fetch-Dest": "document",
-    "Sec-Fetch-Mode": "navigate",
-    "Sec-Fetch-Site": "none",
-    "Cache-Control": "max-age=0",
-    "DNT": "1"
+    "Accept-Encoding": "gzip, deflate, br, zstd",
+    "Sec-Fetch-Dest": "empty",
+    "Sec-Fetch-Mode": "cors",
+    "Sec-Fetch-Site": "same-origin",
+    "Origin": "https://www.amazon.com",
+}
+
+cookies = {
+    "csm-hit" : "tb:s-N57GRFCV81ZD3JHTBYT7|1768317005562&t:1768317008116&adb:adblk_no",
+    "aws-waf-token" : "99849fbe-4408-46e0-b559-3e80abc1377f:CgoAiNyNf4kjAAAA:JQqFyTSf3YupFRixfQVjEHZI+eqcihhUvXGlQLUdGvt/HqISKJU3Zs+fRIm4wAjEUH2N2BcgrqcCovsk+wl7yUyxuy+14b3RMsCnLaaSXky1ieI1aXV5pMMbbr9loLxJcOuma0fEpJUxgKQQVjd3m8WXhM6YQz81cdskwbBk44c7/5IUa8OcM/ahmhvbpHd/nw==",
+    "session-id" : "140-8288817-7395607",
+    "sp-cdn" : '\"L5Z9:PK"',
 }
 
 def fetch_page(url):
     try:
-        response = requests.get(url, headers=headers, timeout=15)
+        response = requests.get(url, headers=headers, cookies=cookies, timeout=15)
         response.raise_for_status()  # Raise an error for bad responses
         soup = BeautifulSoup(response.text, 'html.parser')
         return soup
