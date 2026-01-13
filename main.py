@@ -28,6 +28,8 @@ cookies = {
     "aws-waf-token" : "99849fbe-4408-46e0-b559-3e80abc1377f:CgoAiNyNf4kjAAAA:JQqFyTSf3YupFRixfQVjEHZI+eqcihhUvXGlQLUdGvt/HqISKJU3Zs+fRIm4wAjEUH2N2BcgrqcCovsk+wl7yUyxuy+14b3RMsCnLaaSXky1ieI1aXV5pMMbbr9loLxJcOuma0fEpJUxgKQQVjd3m8WXhM6YQz81cdskwbBk44c7/5IUa8OcM/ahmhvbpHd/nw==",
     "session-id" : "140-8288817-7395607",
     "sp-cdn" : '\"L5Z9:PK"',
+    "i18n-prefs" : "PKR",
+    "lc-main" : "en_US",
 }
 
 def fetch_page(url):
@@ -62,7 +64,7 @@ if __name__ == "__main__":
     product_price_symbol = soup.select_one('span.a-price.aok-align-center.reinventPricePriceToPayMargin.priceToPay span.a-price-symbol').get_text().strip()
     product_name = soup.find(name="span", class_="a-size-large product-title-word-break").get_text().split()
     product_name = " ".join(product_name).strip()
-    print(f"The price of the Product is: {product_price_symbol}{product_total_price:.2f}")
+    print(f"The price of the Product is: {product_price_symbol} {product_total_price:.2f}")
     print(f"Product Name: {product_name}")
 
     if product_total_price < 164000.00:
