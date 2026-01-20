@@ -21,7 +21,10 @@ python -m venv venv
 
 ```powershell
 pip install -r requirements.txt
+playwright install chromium
 ```
+
+Note: The `playwright install chromium` command downloads the Chromium browser needed for web scraping. This is required for both local and GitHub Actions environments.
 
 3. Configure environment variables in a `.env` file at the project root
 
@@ -58,9 +61,49 @@ This workflow is designed to run automatically on a schedule. Set up automation 
 
 Add `.github/workflows/price-check.yml` with a cron schedule to run in the cloud without keeping your PC on.
 
+Example workflow file:
+
+```yaml
+name: Amazon Price Check
+
+on:
+  schedule:
+    - cron: "0 */6 * * *" # Every 6 hours
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  price-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+
+      - name: Run price checker
+        env:
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+          SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+          RECIEVER_EMAIL: ${{ secrets.RECIEVER_EMAIL }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+        run: python main.py
+```
+
+Remember to add your environment variables as GitHub Secrets in your repository settings.
+
 ## How it works
 
-- Fetches the product page with a desktop User-Agent to reduce blocking.
+- Uses Playwright to fetch the product page with a real Chromium browser (headless mode).
+- This approach is more reliable than requests library, especially in automated environments like GitHub Actions.
 - Parses price, currency symbol, and product name with `BeautifulSoup`.
 - Prints the current price to the console/log.
 - Sends an email alert if the price drops below your configured threshold.

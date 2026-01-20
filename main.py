@@ -1,4 +1,4 @@
-import requests
+from playwright.sync_api import sync_playwright
 from bs4 import BeautifulSoup
 from smtplib import SMTP
 from email.mime.text import MIMEText
@@ -11,35 +11,39 @@ import time
 import random
 load_dotenv()
 
-# Enhanced headers to mimic real browser behavior
-headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "Accept": "text/html, */*; q=0.01",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Accept-Encoding": "gzip, deflate, br, zstd",
-    "Sec-Fetch-Dest": "empty",
-    "Sec-Fetch-Mode": "cors",
-    "Sec-Fetch-Site": "same-origin",
-    "Origin": "https://www.amazon.com",
-}
-
-cookies = {
-    "csm-hit" : "tb:s-N57GRFCV81ZD3JHTBYT7|1768317005562&t:1768317008116&adb:adblk_no",
-    "aws-waf-token" : "99849fbe-4408-46e0-b559-3e80abc1377f:CgoAiNyNf4kjAAAA:JQqFyTSf3YupFRixfQVjEHZI+eqcihhUvXGlQLUdGvt/HqISKJU3Zs+fRIm4wAjEUH2N2BcgrqcCovsk+wl7yUyxuy+14b3RMsCnLaaSXky1ieI1aXV5pMMbbr9loLxJcOuma0fEpJUxgKQQVjd3m8WXhM6YQz81cdskwbBk44c7/5IUa8OcM/ahmhvbpHd/nw==",
-    "session-id" : "140-8288817-7395607",
-    "sp-cdn" : '\"L5Z9:PK"',
-    "i18n-prefs" : "PKR",
-    "lc-main" : "en_US",
-}
-
 def fetch_page(url):
+    """
+    Fetches the page content using Playwright with a real browser.
+    This approach is more reliable for GitHub Actions and automated environments.
+    """
     try:
-        response = requests.get(url, headers=headers, cookies=cookies, timeout=15)
-        response.raise_for_status()  # Raise an error for bad responses
-        soup = BeautifulSoup(response.text, 'html.parser')
-        return soup
-    except requests.exceptions.RequestException as e:
-        return f"An error occurred: {e}"
+        with sync_playwright() as p:
+            # Launch browser in headless mode
+            browser = p.chromium.launch(headless=True)
+            context = browser.new_context(
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+                viewport={'width': 1920, 'height': 1080}
+            )
+            page = context.new_page()
+            
+            # Navigate to the URL
+            page.goto(url, wait_until='domcontentloaded', timeout=30000)
+            
+            # Wait a bit for dynamic content to load
+            page.wait_for_timeout(2000)
+            
+            # Get the page content
+            content = page.content()
+            
+            # Close browser
+            browser.close()
+            
+            # Parse with BeautifulSoup
+            soup = BeautifulSoup(content, 'html.parser')
+            return soup
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None
     
 import datetime
 
@@ -58,6 +62,10 @@ def send_email(smtp, from_addr, to_addr, subject, body):
 if __name__ == "__main__":
     url = "https://www.amazon.com/PlayStation-PS5-Console-Ragnar%C3%B6k-Bundle-5/dp/B0BHC395WW/ref=sr_1_7?crid=3IOXEW6U1L08F&dib=eyJ2IjoiMSJ9.woHqMsxNaFAYceP9UBfhRaTo67iyX0jgtD-Og3_0W5b8qlc6tygxiWbVEKq2aoBdnKg-UGiIpTbdfEvf2c8MVD8TWG3CkB_P9BUaNjS6_vCr4GcwGVFXJWJyHOlKYdFa9M1SJcUdpnP94W8umcUuvyfqTGOV3m8N3zXITCPiDUBK0oX_eNjeq52CgpFRS8ECyeelSg937dN-wA8csWSXSNz9Rygc8B_NV81XDsW69Xc.wINPOsWMLYY_oQnspj7zqKdRA6bOWBOeWsh8NdCrChM&dib_tag=se&keywords=ps5+pro&qid=1768162326&sprefix=ps5%2Caps%2C840&sr=8-7"
     soup = fetch_page(url)
+    
+    if soup is None:
+        print("Failed to fetch the page. Exiting...")
+        exit(1)
     price_whole = int(soup.select_one('span.a-price.aok-align-center.reinventPricePriceToPayMargin.priceToPay span.a-price-whole').get_text().replace(',', '').replace('.', '').strip())
     price_fraction = int(soup.select_one('span.a-price.aok-align-center.reinventPricePriceToPayMargin.priceToPay span.a-price-fraction').get_text())
     product_total_price = price_whole + price_fraction / 100
